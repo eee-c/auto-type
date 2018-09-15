@@ -1,8 +1,11 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require('vscode');
+const fs = require('fs');
 
-let currentChangeNum = 0;
+let currentPageNum = 0;
+var rootDir, scriptDir;
+
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 function activate(context) {
@@ -12,7 +15,7 @@ function activate(context) {
     console.log('Congratulations, your extension "auto-type" is now active!');
 
     let disposable = vscode.commands.registerCommand('extension.resetCodeScript', function () {
-      currentChangeNum = 0;
+      currentPageNum = 0;
     });
 
     context.subscriptions.push(disposable);
@@ -28,43 +31,47 @@ function activate(context) {
 
       let ws = vscode.workspace;
 
-      const config = ws.getConfiguration('auto-type');
-      let changes = config.get('changes');
+      rootDir = vscode.workspace.workspaceFolders[0].uri.fsPath;
+      scriptDir = rootDir + '/.auto-type';
 
-      if (currentChangeNum >= changes.length) {
+      let scriptPages;
+      try {
+        scriptPages = loadScript();
+      }
+      catch (e) {
+        vscode.window.showWarningMessage(e);
+        return;
+      }
+
+      if (currentPageNum >= scriptPages.length) {
         vscode.window.showInformationMessage('No more changes.');
         return;
       }
 
-      let change = changes[currentChangeNum];
-      currentChangeNum += 1;
+      let scriptPage = scriptPages[currentPageNum];
+      currentPageNum += 1;
 
-      const files = [
-        '/home/chris/repos/your-first-pwa/index.html',
-        '/home/chris/repos/your-first-pwa/scripts/app.js',
-        '/home/chris/repos/your-first-pwa/service-worker.js',
-      ];
+      let files = scriptPages.map(function(p){ return p.file; });
 
       let docPromises = files.map(function(file){
-        return ws.openTextDocument(file).
+        let fqfn = (file.indexOf('/') == 0) ? file : rootDir + '/' + file;
+        return ws.openTextDocument(fqfn).
                   then(function(doc){
                     vscode.window.showTextDocument(doc, {preview: false});
-                   });
+                  });
       });
 
       Promise.all(docPromises).then(function(){
         let docs = ws.textDocuments;
-
-        let changeDoc = docs.find(function(d){ return d.fileName.indexOf(change.file) > -1 });
+        let changeDoc = docs.find(function(d){ return d.fileName.indexOf(scriptPage.file) > -1 });
 
         vscode.window.showTextDocument(changeDoc).then(function(){
-
-            let range = changeDoc.lineAt(change.line).range;
+            let range = changeDoc.lineAt(scriptPage.line).range;
             vscode.window.activeTextEditor.selection =  new vscode.Selection(range.start, range.end);
             vscode.window.activeTextEditor.revealRange(range, 2);
 
-            let pos = new vscode.Position(change.line, 0);
-            var changeText = typeof(change.text) == 'string' ? change.text : change.text.join('');
+            let pos = new vscode.Position(scriptPage.line, scriptPage.col);
+            var changeText = typeof(scriptPage.content) == 'string' ? scriptPage.content : scriptPage.content.join('');
             type(changeText, pos);
           });
       });
@@ -74,6 +81,71 @@ function activate(context) {
 }
 exports.activate = activate;
 
+function loadScript() {
+  if (!fs.existsSync(scriptDir)) {
+    vscode.window.showWarningMessage('The script directory ' + scriptDir + ' does not exist. Nothing for auto-type to do.');
+    return [];
+  }
+  let pages = fs.readdirSync(scriptDir);
+  if (!pages.length) {
+    vscode.window.showWarningMessage('No script pages found in ' + scriptDir + '. Nothing for auto-type to do.');
+    return [];
+  }
+  return pages.map(function(pageName) {
+    return parseScriptPage(pageName, scriptDir);
+  });
+}
+
+function parseScriptPage(pageName, scriptDir) {
+  let pagePath = scriptDir + '/' + pageName;
+  let fullContent = fs.readFileSync(pagePath, {encoding: 'utf-8'});
+  let parts = fullContent.split(/\n\-\-\-\n/m);
+
+  var frontMatter, content;
+  try {
+    frontMatter = parseFrontMatter(parts[0]);
+    content = parts[1];
+  }
+  catch (e) {
+    throw e + ' in script page ' + pagePath;
+  }
+
+  let options = {
+    name: pageName,
+    path: pagePath,
+    content: content,
+    file: frontMatter.file,
+    line: frontMatter.line,
+    col: frontMatter.col,
+  }
+
+  if (!options.file) throw "Missing file property";
+  if (!fs.existsSync(options.file) && !fs.existsSync(scriptDir + '/../' + options.file)) {
+    throw "Can't find target file " + options.file;
+  }
+
+  return options;
+}
+
+function parseFrontMatter(text) {
+  let options = text.split("\n")
+                    .reduce(
+                        function(a, line) {
+                          let parts = line.split(/\s*:\s*/);
+                          a[parts[0]] = parts[1];
+                          return a;
+                        },
+                        {}
+                     );
+  if (!options.line) options.line = 1;
+  if (!options.col) options.col = 1;
+
+  options.line = parseInt(options.line, 10) - 1;
+  options.col = parseInt(options.col, 10) - 1;
+
+  return options;
+}
+
 function type(text, pos) {
   if (!text) return;
   if (text.length == 0) return;
@@ -82,19 +154,21 @@ function type(text, pos) {
 
   var char = text.substring(0, 1);
   if (char == '↓') {
-    pos = new vscode.Position(pos.line + 1, 0);
+    pos = new vscode.Position(pos.line + 1, pos.character);
     char = '';
   }
   if (char == '↑') {
-    pos = new vscode.Position(pos.line - 1, 0);
+    pos = new vscode.Position(pos.line - 1, pos.character);
     char = '';
   }
   if (char == '→') {
     pos = new vscode.Position(pos.line, pos.character + 1);
     char = '';
   }
-  if (char == '←') { char = ''; }
-  //if (char == '⌫') { char = ''; }
+  if (char == '←') {
+    pos = new vscode.Position(pos.line, pos.character - 1);
+    char = '';
+  }
 
   if (char == "\n") {
     pos = new vscode.Position(pos.line + 1, 0);
