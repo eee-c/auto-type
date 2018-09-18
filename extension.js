@@ -152,44 +152,47 @@ function type(text, pos) {
 
   let editor = vscode.window.activeTextEditor;
 
+  var _pos = pos;
   var char = text.substring(0, 1);
   if (char == '↓') {
-    pos = new vscode.Position(pos.line + 1, pos.character);
+    _pos = new vscode.Position(pos.line + 1, pos.character);
     char = '';
   }
   if (char == '↑') {
-    pos = new vscode.Position(pos.line - 1, pos.character);
+    _pos = new vscode.Position(pos.line - 1, pos.character);
     char = '';
   }
   if (char == '→') {
-    pos = new vscode.Position(pos.line, pos.character + 1);
+    _pos = new vscode.Position(pos.line, pos.character + 1);
     char = '';
   }
   if (char == '←') {
-    pos = new vscode.Position(pos.line, pos.character - 1);
+    _pos = new vscode.Position(pos.line, pos.character - 1);
     char = '';
-  }
-
-  if (char == "\n") {
-    pos = new vscode.Position(pos.line + 1, 0);
   }
 
   editor.edit(function(editBuilder) {
     if (char != '⌫') {
-      editBuilder.insert(pos, char);
+      editBuilder.insert(_pos, char);
     }
     else {
-      let pos0 = new vscode.Position(pos.line, pos.character - 1);
-      let selection = new vscode.Selection(pos0, pos);
+      let _pos = new vscode.Position(pos.line, pos.character - 1);
+      let selection = new vscode.Selection(_pos, pos);
       editBuilder.delete(selection);
-      pos = pos0;
+      pos = _pos;
     }
 
-    var newSelection = new vscode.Selection(pos, pos);
+    var newSelection = new vscode.Selection(_pos, _pos);
+    if (char == "\n") {
+      newSelection = new vscode.Selection(pos, pos);
+      _pos = new vscode.Position(pos.line + 1, 0);
+    }
+
     editor.selection = newSelection;
   }).then(function()  {
-    var delay = 5 + 10*Math.random();
-    var _p = new vscode.Position(pos.line, char.length + pos.character);
+    var delay = 20 + 80*Math.random();
+    if (Math.random() < 0.1) delay += 250;
+    var _p = new vscode.Position(_pos.line, char.length + _pos.character);
     setTimeout(function(){ type(text.substring(1, text.length), _p); }, delay);
   });
 }
