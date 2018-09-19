@@ -184,16 +184,17 @@ function type(text, pos) {
       editBuilder.insert(_pos, char);
     }
     else {
-      let _pos = new vscode.Position(pos.line, pos.character - 1);
+      _pos = new vscode.Position(pos.line, pos.character - 1);
       let selection = new vscode.Selection(_pos, pos);
       editBuilder.delete(selection);
-      pos = _pos;
+      char = '';
     }
 
     var newSelection = new vscode.Selection(_pos, _pos);
     if (char == "\n") {
       newSelection = new vscode.Selection(pos, pos);
       _pos = new vscode.Position(pos.line + 1, 0);
+      char = '';
     }
 
     editor.selection = newSelection;
