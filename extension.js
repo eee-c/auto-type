@@ -44,7 +44,7 @@ function activate(context) {
       }
 
       if (currentPageNum >= scriptPages.length) {
-        vscode.window.showInformationMessage('No more changes.');
+        vscode.window.showInformationMessage('No more script pages.');
         return;
       }
 
@@ -196,7 +196,6 @@ function type(text, pos) {
     setTimeout(function(){ type(text.substring(1, text.length), _p); }, delay);
   });
 }
-
 
 // this method is called when your extension is deactivated
 function deactivate() {
