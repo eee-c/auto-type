@@ -68,7 +68,7 @@ function activate(context) {
         vscode.window.showTextDocument(changeDoc).then(function(){
             let range = changeDoc.lineAt(scriptPage.line).range;
             vscode.window.activeTextEditor.selection =  new vscode.Selection(range.start, range.end);
-            vscode.window.activeTextEditor.revealRange(range, 2);
+            vscode.window.activeTextEditor.revealRange(range, scriptPage.align);
 
             let pos = new vscode.Position(scriptPage.line, scriptPage.col);
             var changeText = typeof(scriptPage.content) == 'string' ? scriptPage.content : scriptPage.content.join('');
@@ -114,9 +114,10 @@ function parseScriptPage(pageName, scriptDir) {
     name: pageName,
     path: pagePath,
     content: content,
-    file: frontMatter.file,
-    line: frontMatter.line,
-    col: frontMatter.col,
+  };
+
+  for (var prop in frontMatter) {
+    options[prop] = frontMatter[prop];
   }
 
   if (!options.file) throw "Missing file property";
@@ -142,6 +143,9 @@ function parseFrontMatter(text) {
 
   options.line = parseInt(options.line, 10) - 1;
   options.col = parseInt(options.col, 10) - 1;
+
+  if (!options.align) options.align = 'middle';
+  options.align = options.align == 'middle' ? 2 : 3;
 
   return options;
 }
