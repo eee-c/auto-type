@@ -170,6 +170,14 @@ function type(text, pos) {
     _pos = new vscode.Position(pos.line, pos.character - 1);
     char = '';
   }
+  if (char == '⇤') {
+    _pos = new vscode.Position(pos.line, 0);
+    char = '';
+  }
+  if (char == '⇥') {
+    _pos = editor.document.lineAt(pos.line).range.end;
+    char = '';
+  }
 
   editor.edit(function(editBuilder) {
     if (char != '⌫') {
