@@ -13,7 +13,7 @@ In addition to typing code, auto-type can :
 
 Here is auto-type in action:
 
-![A simple auto type script in action](images/basic_auto_type.gif)
+![A simple auto type script in action](https://raw.githubusercontent.com/eee-c/auto-type/master/images/basic_auto_type.gif)
 
 To use auto-type, you type up the script you want to follow, one page at a time. The script pages are stored in the `.auto-type` directory in the root folder of your project. The script pages are ordered by filename.
 
@@ -80,6 +80,10 @@ The real power of auto-type comes from it's active unicode support. Following is
 > Tip: combine active unicode to achieve realistic typing. For example, to move to the end of the line, then back three characters, use: `⇥←←←`.
 
 > Tip: newlines are significant. Don't hit `Enter` in between active unicode unless you want a newline. Newline at the end of the file will type insert a newline at the very end of typing.
+
+### More Examples
+
+A complete auto-type reference repo is available at https://github.com/eee-c/your-first-pwa. That repo has 5 different scripts, each with multiple pages, in five tags listed in the README.
 
 ### Running Script Pages
 
