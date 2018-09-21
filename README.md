@@ -13,7 +13,7 @@ In addition to typing code, auto-type can :
 
 Here is auto-type in action:
 
-![A simple auto type script in action](images/basic-auto-type.gif)
+![A simple auto type script in action](images/basic_auto_type.gif)
 
 To use auto-type, you type up the script you want to follow, one page at a time. The script pages are stored in the `.auto-type` directory in the root folder of your project. The script pages are ordered by filename.
 
