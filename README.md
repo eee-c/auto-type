@@ -1,65 +1,112 @@
-# auto-type README
+# auto-type
 
-This is the README for your extension "auto-type". After writing up a brief description, we recommend including the following sections.
+Never live code again! Type it up ahead of time in a simple format, then replay it for 100% typing accuracy each time.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+In addition to typing code, auto-type can :
 
-For example if there is an image subfolder under your extension project workspace:
+* move the cursor left and right
+* move the cursor up and down
+* Move the cursor to the beginning and end of the line
+* delete characters
 
-\!\[feature X\]\(images/feature-x.png\)
+Here is auto-type in action:
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+![A simple auto type script in action](images/basic-auto-type.gif)
+
+To use auto-type, you type up the script you want to follow, one page at a time. The script pages are stored in the `.auto-type` directory in the root folder of your project. The script pages are ordered by filename.
+
+> Tip: To order your pages, give each page a name that starts with a number like `001-description`, `002-description-of-page-2`, etc.
+
+Script pages look like:
+
+```
+file: scripts/app.js
+line: 46
+align: top
+---
+↓↓↓↓↓↓↓⇥
+    if (!app.selectedCities) {
+      app.selectedCities = [];
+    }↓↓⇥
+    app.selectedCities.push({key: key, label: label});
+    app.saveSelectedCities();
+```
+
+Pages consist of two parts (separated by a line with three dashes):
+
+1. The front-matter, which describes which file you're editing, line numbers, etc.
+2. The actual characters to type.
+
+### Front-matter
+
+Front-matter goes at the top of the script page, above the triple-dash separator. Supported attributes include:
+
+* `file` - the path to the file to be edited (required, can be relative to your project's root directory)
+* `line` - the line number to start at (optional, defaults to `1`)
+* `col` - the column number of start at (optional, defaults to `1`)
+* `align` - where to position the active line in the editor viewport (optional, defaults to `middle`, can also be set to `top`)
+
+> IMPORTANT: the file should already be open in VS Code when starting the script. Don't rely on auto-type to open it!
+
+> Tip: Use `col` sparingly. It's more realistic to start at the beginning of the line, then arrow over to the place you want to start typing (see `Script Content` below)
+
+> TIP: Setting align to `top` is useful with large functions / methods.
+
+### Script Content
+
+Inside script page files, the content can be as simple as code that you want to type:
+
+```
+file: service-worker.js
+---
+var cacheName = 'weatherPWA-step-6-1';
+var filesToCache = [];
+```
+
+The real power of auto-type comes from it's active unicode support. Following is the list of active unicode characters supported by auto-type:
+
+| Character | Name | Description |
+|:---------:|------|-------------|
+| ↓         | Down Arrow      | Move the cursor down one line |
+| ↑         | Up Arrow        | Move the cursor up one line |
+| →         | Right Arrow     | Move the cursor right one character |
+| ←         | Left Arrow      | Move the cursor left one character |
+| ⇥         | Right Arrow Bar | Move the cursor to the end of the line |
+| ⇤         | Left Arrow Bar  | Move the cursor to the beginning of the line |
+| ⌫         | Backspace       | Delete the character to the left of the cursor |
+
+> Tip: combine active unicode to achieve realistic typing. For example, to move to the end of the line, then back three characters, use: `⇥←←←`.
+
+> Tip: newlines are significant. Don't hit `Enter` in between active unicode unless you want a newline. Newline at the end of the file will type insert a newline at the very end of typing.
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+I am unsure if this works on Windows yet.
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: enable/disable this extension
-* `myExtension.thing`: set to `blah` to do something
+There are no supported settings yet.
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+This is a very early release. It likely does not work on Windows yet with CRLF newlines and probably doesn't work with Windows file paths.
+
+auto-type does not:
+
+* trigger code completion
+* trigger auto-termination of blocks (e.g. the closing parenthesis when the opening parenthesis is typed)
+
+auto-type uses VS Code's insert API to "type." In other words, it copies and pastes code, one character at a time.
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
+### 0.1.0
 
-### 1.0.0
+Initial beta release. Minimal viable features:
 
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
------------------------------------------------------------------------------------------------------------
-
-## Working with Markdown
-
-**Note:** You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+CMD+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux) or `Cmd+Space` (macOS) to see a list of Markdown snippets
-
-### For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+* Left/right cursor movement
+* Up/down cursor movement
+* Beginning/end of line movement
+* Delete

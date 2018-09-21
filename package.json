@@ -2,7 +2,7 @@
     "name": "auto-type",
     "displayName": "auto-type",
     "description": "Auto-type code from a script",
-    "version": "0.0.1",
+    "version": "0.1.0",
     "publisher": "none",
     "engines": {
         "vscode": "^1.27.0"
@@ -25,18 +25,7 @@
                 "command": "extension.resetCodeScript",
                 "title": "Restart Code Script"
             }
-        ],
-        "configuration": {
-            "type": "object",
-            "title": "Auto Type configuration",
-            "properties": {
-                "auto-type.changes": {
-                    "type": "array",
-                    "default": [],
-                    "description": "List of changes."
-                }
-            }
-        }
+        ]
     },
     "scripts": {
         "postinstall": "node ./node_modules/vscode/bin/install",
