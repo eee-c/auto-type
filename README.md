@@ -81,6 +81,12 @@ The real power of auto-type comes from it's active unicode support. Following is
 
 > Tip: newlines are significant. Don't hit `Enter` in between active unicode unless you want a newline. Newline at the end of the file will type insert a newline at the very end of typing.
 
+### Running Script Pages
+
+Scripts are run one page at a time with the `Play Code Script` command.
+
+While developing script, the `Restart Code Script` will restart the script with the first page.
+
 ## Requirements
 
 I am unsure if this works on Windows yet.
