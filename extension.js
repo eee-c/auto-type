@@ -2,6 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require('vscode');
 const fs = require('fs');
+const path = require('path');
 
 let currentPageNum = 0;
 var rootDir, scriptDir;
@@ -32,7 +33,7 @@ function activate(context) {
       let ws = vscode.workspace;
 
       rootDir = vscode.workspace.workspaceFolders[0].uri.fsPath;
-      scriptDir = rootDir + '/.auto-type';
+      scriptDir = path.join(rootDir, '.auto-type');
 
       let scriptPages;
       try {
@@ -54,7 +55,7 @@ function activate(context) {
       let files = scriptPages.map(function(p){ return p.file; });
 
       let docPromises = files.map(function(file){
-        let fqfn = (file.indexOf('/') == 0) ? file : rootDir + '/' + file;
+        let fqfn = (file.indexOf(path.sep) == 0) ? file : path.join(rootDir, file);
         return ws.openTextDocument(fqfn).
                   then(function(doc){
                     vscode.window.showTextDocument(doc, {preview: false});
@@ -97,8 +98,10 @@ function loadScript() {
 }
 
 function parseScriptPage(pageName, scriptDir) {
-  let pagePath = scriptDir + '/' + pageName;
-  let fullContent = fs.readFileSync(pagePath, {encoding: 'utf-8'});
+  let pagePath = path.join(scriptDir, pageName);
+  let fullContent = fs
+    .readFileSync(pagePath, {encoding: 'utf-8'})
+    .replace(/\r\n?|\n/g, '\n');
   let parts = fullContent.split(/\n\-\-\-\n/m);
 
   var frontMatter, content;
@@ -121,7 +124,7 @@ function parseScriptPage(pageName, scriptDir) {
   }
 
   if (!options.file) throw "Missing file property";
-  if (!fs.existsSync(options.file) && !fs.existsSync(scriptDir + '/../' + options.file)) {
+  if (!fs.existsSync(options.file) && !fs.existsSync(path.join(scriptDir, '..', options.file))) {
     throw "Can't find target file " + options.file;
   }
 
